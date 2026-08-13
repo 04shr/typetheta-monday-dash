@@ -1,4 +1,16 @@
 /**
+ * Resolves the full API URL by prepending the base API URL from environment.
+ * If the URL is already absolute, returns it as-is.
+ */
+function resolveApiUrl(url: string): string {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const baseUrl = import.meta.env.VITE_API_URL || "";
+  return baseUrl ? `${baseUrl}${url}` : url;
+}
+
+/**
  * Helper to safely fetch JSON from server endpoints without throwing
  * "Unexpected token '<', '<!doctype '..." when an endpoint returns non-JSON/HTML.
  * Includes automatic retry with delay for network errors ("Failed to fetch").
@@ -9,11 +21,12 @@ export async function safeFetchJson<T = any>(
   retries = 2,
   delayMs = 800
 ): Promise<T> {
+  const resolvedUrl = resolveApiUrl(url);
   let lastError: any;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(resolvedUrl, options);
       const contentType = response.headers.get("content-type") || "";
       const text = await response.text();
 
