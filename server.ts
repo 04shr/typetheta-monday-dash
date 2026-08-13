@@ -17,8 +17,11 @@ const CONFIG_FILE = isServerlessEnvironment
 // SECURITY: API keys are now loaded from environment variables only
 // DO NOT hardcode secrets in source code
 const ALLOWED_ORIGINS = [
-  process.env.NETLIFY_URL || 'http://localhost:3000',
-  process.env.FRONTEND_URL || '',
+  // Production
+  'https://typetheta-monday-dashboard.netlify.app',
+  process.env.NETLIFY_URL,
+  process.env.FRONTEND_URL,
+  // Development
   'http://localhost:5173',  // Vite dev server
   'http://localhost:3000'   // Local dev
 ].filter(Boolean);
