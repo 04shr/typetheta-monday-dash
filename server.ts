@@ -14,33 +14,27 @@ const CONFIG_FILE = isServerlessEnvironment
   ? path.join("/tmp", ".saved_monday_config.json")
   : path.join(process.cwd(), ".saved_monday_config.json");
 
-const FIXED_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY5MDAxMzc5MCwiYWFpIjoxMSwidWlkIjo2NDAzMjE5MCwiaWFkIjoiMjAyNi0wOC0wNVQxMToyOTo0My4yNDdaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6MjMyNTk1MzEsInJnbiI6ImV1YzEifQ.rKeleAaLDqbSCaWuXwz_J7h5HWgnxmPxrbPFFvbu7O0";
-const FIXED_BOARD_ID = "1590190694";
+// SECURITY: API keys are now loaded from environment variables only
+// DO NOT hardcode secrets in source code
+const ALLOWED_ORIGINS = [
+  process.env.NETLIFY_URL || 'http://localhost:3000',
+  process.env.FRONTEND_URL || '',
+  'http://localhost:5173',  // Vite dev server
+  'http://localhost:3000'   // Local dev
+].filter(Boolean);
 
-let memoryConfig: { apiKey?: string; boardId?: string; isFixed?: boolean; updatedAt?: string } | null = null;
+// SECURITY: Config stored only in environment variables (no disk writes)
+// This prevents accidental credential exposure in source control
 
 function getSavedConfig() {
-  if (memoryConfig && memoryConfig.apiKey && memoryConfig.boardId) {
-    return memoryConfig;
-  }
-  try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const data = fs.readFileSync(CONFIG_FILE, "utf-8");
-      const parsed = JSON.parse(data);
-      if (parsed && parsed.apiKey && parsed.boardId) {
-        memoryConfig = parsed;
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error("Error reading saved config file:", err);
-  }
-  return {
-    apiKey: FIXED_API_KEY,
-    boardId: FIXED_BOARD_ID,
+  // Return environment variables only - no file-based storage
+  const envConfig = {
+    apiKey: process.env.MONDAY_API_KEY,
+    boardId: process.env.MONDAY_BOARD_ID,
     isFixed: true,
     updatedAt: new Date().toISOString()
   };
+  return envConfig;
 }
 
 function resolveApiKey(rawKey?: any): string {
@@ -55,7 +49,7 @@ function resolveApiKey(rawKey?: any): string {
     rawKey.includes("\u2022") ||
     /[^\x00-\x7F]/.test(rawKey)
   ) {
-    return saved?.apiKey || process.env.MONDAY_API_KEY || FIXED_API_KEY;
+    return saved?.apiKey || process.env.MONDAY_API_KEY || "";
   }
   return rawKey.trim();
 }
@@ -69,21 +63,16 @@ function resolveBoardId(rawBoardId?: any): string {
     rawBoardId === "null" ||
     rawBoardId === "undefined"
   ) {
-    return saved?.boardId || process.env.MONDAY_BOARD_ID || FIXED_BOARD_ID;
+    return saved?.boardId || process.env.MONDAY_BOARD_ID || "";
   }
   return rawBoardId.trim();
 }
 
 function saveConfigToFile(apiKey: string, boardId: string, isFixed: boolean = true) {
-  memoryConfig = { apiKey, boardId, isFixed, updatedAt: new Date().toISOString() };
-  try {
-    const config = { apiKey, boardId, isFixed, updatedAt: new Date().toISOString() };
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8");
-    return true;
-  } catch (err) {
-    console.warn("Notice: Saved config in memory (disk write failed in serverless):", err);
-    return true;
-  }
+  // SECURITY: Disabled disk-based config storage
+  // Use environment variables instead via deployment platform (Render, Netlify, etc)
+  console.warn("[SECURITY] Config persistence disabled. Please set MONDAY_API_KEY and MONDAY_BOARD_ID as environment variables.");
+  return false;
 }
 
 export const app = express();
@@ -108,13 +97,16 @@ app.use((req, res, next) => {
 
 // Global Security & CORS Headers Middleware
 app.use((req, res, next) => {
+  // SECURITY: Updated CSP to remove unsafe-inline and unsafe-eval
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.googleapis.com https://*.gstatic.com https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://cdn1.monday.com https://files.monday.com https://task-manager-pro.monday.com https://api.qrserver.com https://lh3.googleusercontent.com; connect-src 'self' https://api.monday.com https://*.firebaseio.com https://*.firebaseapp.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com; frame-ancestors 'self' https://*.google.com https://*.ai.studio https://*.run.app;"
+    "default-src 'self'; script-src 'self' https://apis.google.com https://*.googleapis.com https://*.gstatic.com https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://cdn1.monday.com https://files.monday.com https://task-manager-pro.monday.com https://api.qrserver.com https://lh3.googleusercontent.com; connect-src 'self' https://api.monday.com https://*.firebaseio.com https://*.firebaseapp.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com; frame-ancestors 'self' https://*.google.com https://*.ai.studio https://*.run.app;"
   );
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
-  const origin = req.headers.origin;
-  if (origin) {
+  
+  // SECURITY: Whitelist CORS origins instead of accepting all
+  const origin = req.headers.origin as string;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
