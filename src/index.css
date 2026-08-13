@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Base resets & premium matte, eye-friendly light/slate theme */
+html, body {
+  background-color: #f8fafc !important; /* Soft, glare-free off-white */
+  color: #334155 !important; /* High-contrast, easy-to-read slate-700 */
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* High contrast headings and labels */
+h1, h2, h3, h4, h5, h6 {
+  color: #0f172a !important; /* Rich deep slate-900 for absolute contrast */
+}
+
+/* Ensure white cards stand out on the soft slate body */
+.bg-white {
+  background-color: #ffffff !important;
+}
+
+/* Table general styling */
+thead {
+  background-color: #f1f5f9 !important; /* Clear header row background */
+}
+
+thead th {
+  color: #475569 !important; /* Slate-600 for column headers */
+  font-weight: 600 !important;
+}
+
+tbody tr {
+  border-bottom-color: #f1f5f9 !important;
+}
+
+/* Soft, readable badge styles overriding bright neon colors */
+.bg-green-100, .bg-green-50, .bg-emerald-100, .bg-emerald-50 {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.bg-red-100, .bg-red-50, .bg-rose-100, .bg-rose-50 {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
+.bg-amber-100, .bg-amber-50 {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border-color: #fde68a !important;
+}
+
+.bg-blue-100, .bg-indigo-100, .bg-indigo-50 {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border-color: #bfdbfe !important;
+}
+
+/* Input elements styling */
+input, select, textarea {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #6161ff !important;
+  box-shadow: 0 0 0 2px rgba(97, 97, 255, 0.15) !important;
+  outline: none !important;
+}
+
+input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Customized eye-friendly webkit scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

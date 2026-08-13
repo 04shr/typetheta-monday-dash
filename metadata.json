@@ -1,0 +1,6 @@
+{
+  "name": "TypeTheta Monday.com Command Centre",
+  "description": "An executive dashboard with dark left menu bar, real-time Monday.com write-backs, email SLA response tracking, Gemini AI draft summaries, and multi-tier SLA customization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

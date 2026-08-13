@@ -1,0 +1,30 @@
+{
+  "entities": {
+    "users": {
+      "title": "Portal Users",
+      "description": "Registered and authenticated users of the TypeTheta Portal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "provider": { "type": "string" },
+        "avatarBg": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "isOnline": { "type": "boolean" }
+      },
+      "required": ["email", "name"]
+    },
+    "boardData": {
+      "title": "Monday Board Data Cache",
+      "description": "Cached data and sync state for Monday.com board items",
+      "type": "object",
+      "properties": {
+        "boardId": { "type": "string" },
+        "lastSyncedAt": { "type": "string" },
+        "items": { "type": "array" }
+      }
+    }
+  }
+}
